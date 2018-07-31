@@ -8,14 +8,17 @@ output: html_document
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(here)
-library(ggplot2)
-library(plotly)
-library(lubridate)
-library(boot)
-library(resample)
+library(viridis)
+library(broom)
+library(modelr)
 library(plotly)
 
-theme_set(theme_bw())
+knitr::opts_chunk$set(tidy = FALSE,
+                      fig.width = 6,
+                      fig.height = 5,
+                      echo = FALSE)
+
+
 
 ```
 #Os Dados
@@ -33,10 +36,11 @@ dados = read_csv(("../speed-dating/speed-dating.csv"),
                                     race	= col_character(),
                                     from	= col_character(),
                                     career	= col_character()))
-dados
+colnames(dados)
+
 ```
 
-#Pergunta : A quantidade de likes de um date é influenciada pelo gosto musical dos participantes ?
+#Pergunta : A quantidade de likes de um date é influenciada pelo gosto musical e de filmes dos participantes ?
 
 Vamos tentar visualizar a relação like e música.
 
@@ -52,20 +56,37 @@ ggplotly(p)
 
 
 ```
-
-
+##Like vs Filmes 
+Vamos tentar visualizar a relação like e filmes
 
 ```{r}
-p<- ggplot(dados, aes(x = like, y = music)) + 
-  geom_point(alpha = 0.4) + geom_smooth(method = "lm", se = FALSE)
+
+p<- ggplot(dados, aes(x = like, y = movies)) + 
+  geom_point(alpha = 0.4) + 
+  geom_abline(intercept = 69, slope = -.65, color  = "red") 
 
 ggplotly(p)
 
 
-modelo = lm(like ~ music, 
+```
+#Modelo
+Iremos montar um modelo onde a variável dependente é like; 
+
+```{r}
+
+modelo = lm(like ~ music + movies, 
                data = dados)
 
 tidy(modelo, conf.int=TRUE)
-glance(modelo)
 
 ```
+
+Aqui podemos observar que podemos excluir filmes (movies) da análise por ter um intervalo de confiança que passa por zero, ou seja, não podemos dizer que ela explique algo sobre nossa variável independente. 
+Então nos resta analisar música (music), conseguimos ver que o gosto musical dos participantes influencia em 5.05% o like
+
+
+```{r}
+glance(modelo)
+```
+
+Aqui podemos ver o valor de Rˆ2 sendo 0.002097156 isso quer dizer que o modelo escolhido explica em ao menos em 0.2% a variável independente, o que não é bom pois os valores de Rˆ2 variam de 0 a 1 (0% a 100%), e quanto mais próximo de um melhor. O P-Valor é menor que 5% (0.67%), rejeitamos a hipótese nula, isto é, podemos dizer que variáveis escolhidas explicam em 0.67% o like ou não de um encontro.
