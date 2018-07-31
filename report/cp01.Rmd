@@ -13,11 +13,17 @@ library(plotly)
 library(lubridate)
 library(boot)
 library(resample)
+library(plotly)
 
 theme_set(theme_bw())
 
 ```
 #Os Dados
+
+Temos dados descrevendo 5000 encontros relâmpagos (speed dating, procura no google) de 4 minutos envolvendo 310 jovens americanos. Os dados originais foram coletados por professores da Columbia Business School no experimento descrito aqui. Aqui estamos usando uma versão com menos colunas para agilizar para vocês.
+
+Os participantes tinham vários encontros de 4 minutos por noite. Após cada um, preenchiam fichas avaliando aqueles com quem se encontraram. Cada linha nos dados representa um desses encontros.
+(https://github.com/nazareno/ciencia-de-dados-1/tree/master/5-regressao/speed-dating)
 
 ```{r}
 dados = read_csv(("../speed-dating/speed-dating.csv"), 
@@ -28,4 +34,38 @@ dados = read_csv(("../speed-dating/speed-dating.csv"),
                                     from	= col_character(),
                                     career	= col_character()))
 dados
+```
+
+#Pergunta : A quantidade de likes de um date é influenciada pelo gosto musical dos participantes ?
+
+Vamos tentar visualizar a relação like e música.
+
+##Like vs Musica 
+
+```{r}
+
+p<- ggplot(dados, aes(x = like, y = music)) + 
+  geom_point(alpha = 0.4) + 
+  geom_abline(intercept = 69, slope = -.65, color  = "red") 
+
+ggplotly(p)
+
+
+```
+
+
+
+```{r}
+p<- ggplot(dados, aes(x = like, y = music)) + 
+  geom_point(alpha = 0.4) + geom_smooth(method = "lm", se = FALSE)
+
+ggplotly(p)
+
+
+modelo = lm(like ~ music, 
+               data = dados)
+
+tidy(modelo, conf.int=TRUE)
+glance(modelo)
+
 ```
